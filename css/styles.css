@@ -328,6 +328,44 @@ kbd {
   color: var(--muted);
   margin: 0 0 22px;
 }
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Home menu */
+.modal.menu {
+  padding: 34px 30px 30px;
+}
+.menu-logo {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0 0 6px;
+  color: var(--text);
+}
+.menu-logo span {
+  color: var(--accent);
+}
+.menu-tagline {
+  margin: 0 0 22px;
+}
+.menu-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.difficulty {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg-2);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
 
 @keyframes pulse {
   50% {

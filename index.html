@@ -15,12 +15,12 @@
     <main class="app">
       <header class="topbar">
         <h1 class="logo">Wallzy<span>.gg</span></h1>
-        <button id="new-game" class="btn ghost">New Game</button>
+        <button id="menu-btn" class="btn ghost">Menu</button>
       </header>
 
       <section class="scoreboard">
         <div class="player-card bot-card">
-          <span class="role">Bot</span>
+          <span class="role" id="bot-role">Bot</span>
           <span class="time" id="bot-time">60.0</span>
           <span class="walls">Walls: <strong id="bot-walls">10</strong></span>
         </div>
@@ -54,11 +54,28 @@
       </p>
     </main>
 
+    <div id="menu-overlay" class="overlay">
+      <div class="modal menu">
+        <h2 class="menu-logo">Wallzy<span>.gg</span></h2>
+        <p class="menu-tagline">Race to the far row, wall off the bot, and beat the clock.</p>
+        <div class="menu-label">Bot difficulty</div>
+        <div class="difficulty" role="group" aria-label="Bot difficulty">
+          <button class="btn toggle diff" data-level="easy">Easy</button>
+          <button class="btn toggle diff active" data-level="medium">Medium</button>
+          <button class="btn toggle diff" data-level="hard">Hard</button>
+        </div>
+        <button id="start-game" class="btn primary">Start Game</button>
+      </div>
+    </div>
+
     <div id="win-overlay" class="overlay hidden">
       <div class="modal">
         <h2 id="win-title">You Win!</h2>
         <p id="win-message"></p>
-        <button id="win-restart" class="btn primary">Play Again</button>
+        <div class="modal-actions">
+          <button id="win-restart" class="btn primary">Play Again</button>
+          <button id="win-menu" class="btn ghost">Main Menu</button>
+        </div>
       </div>
     </div>
 

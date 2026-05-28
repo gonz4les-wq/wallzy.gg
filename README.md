@@ -46,6 +46,20 @@ highlighted in amber.
 
 ---
 
+## Difficulty
+
+Pick a bot difficulty on the **home menu** before pressing **Start Game**:
+
+- **Easy** — passive: races to its goal, only walls to survive a near-loss, and
+  occasionally plays a sub-optimal move. Good for learning.
+- **Medium** — balanced: races when ahead and places walls to delay you,
+  especially as you approach the top row.
+- **Hard** — aggressive: proactively spends walls whenever they improve its
+  position and defends hard when you get close.
+
+You can return to the menu any time with the **Menu** button (top-right) or
+**Main Menu** on the win screen.
+
 ## Controls
 
 | Action | Mouse / Touch | Keyboard |
@@ -54,7 +68,7 @@ highlighted in amber.
 | Toggle wall mode | "Place Wall" button | `W` |
 | Rotate wall | "Horizontal / Vertical" | `R` |
 | Place wall | Tap a board groove | — |
-| New game | "New Game" button | — |
+| Open menu | "Menu" button | — |
 
 ---
 
@@ -127,7 +141,7 @@ your browser's **Install app** / **Add to Home Screen** option. After the first
 load the game is fully playable offline.
 
 > **Updating the deployed app:** the service worker precaches the app shell under
-> a versioned cache (`wallzy-v1` in `service-worker.js`). When you ship changes,
+> a versioned cache (`wallzy-v2` in `service-worker.js`). When you ship changes,
 > bump that version string so clients fetch the new files.
 
 ---
@@ -141,3 +155,5 @@ load the game is fully playable offline.
 - **Bot AI** computes BFS shortest paths for both players each turn: it races when
   it's level or ahead, and otherwise searches all legal walls for the one that
   delays you most without hurting its own route (and never one that traps anyone).
+  Three difficulty profiles tune how eagerly it spends walls and whether it ever
+  plays a sub-optimal move.

@@ -15,6 +15,8 @@ class Game {
     this.mode = 'move';
     this.orientation = 'h';
     this.botTimer = null;
+    this.level = 'medium';
+    this.selectedLevel = 'medium';
 
     this.renderer = new Renderer(document.getElementById('board'), {
       onMove: (r, c) => this.handleHumanMove(r, c),
@@ -33,18 +35,23 @@ class Game {
       orientH: document.getElementById('orient-h'),
       orientV: document.getElementById('orient-v'),
       orientGroup: document.getElementById('orient-group'),
-      newGame: document.getElementById('new-game'),
+      menuBtn: document.getElementById('menu-btn'),
+      botRole: document.getElementById('bot-role'),
       overlay: document.getElementById('win-overlay'),
       winTitle: document.getElementById('win-title'),
       winMessage: document.getElementById('win-message'),
       winRestart: document.getElementById('win-restart'),
+      winMenu: document.getElementById('win-menu'),
+      menuOverlay: document.getElementById('menu-overlay'),
+      startBtn: document.getElementById('start-game'),
+      diffButtons: Array.from(document.querySelectorAll('.diff')),
     };
 
     this.bindControls();
     this.timer.onTick = (t) => this.renderTimers(t);
     this.timer.onTimeout = (who) => this.handleTimeout(who);
 
-    this.newGame();
+    this.showMenu();
   }
 
   bindControls() {
@@ -52,10 +59,45 @@ class Game {
     this.dom.modeWall.addEventListener('click', () => this.setMode('wall'));
     this.dom.orientH.addEventListener('click', () => this.setOrientation('h'));
     this.dom.orientV.addEventListener('click', () => this.setOrientation('v'));
-    this.dom.newGame.addEventListener('click', () => this.newGame());
+    this.dom.menuBtn.addEventListener('click', () => this.showMenu());
     this.dom.winRestart.addEventListener('click', () => this.newGame());
+    this.dom.winMenu.addEventListener('click', () => this.showMenu());
+    this.dom.startBtn.addEventListener('click', () => this.startGame(this.selectedLevel));
+    for (const btn of this.dom.diffButtons) {
+      btn.addEventListener('click', () => this.selectDifficulty(btn.dataset.level));
+    }
 
     window.addEventListener('keydown', (e) => this.handleKey(e));
+  }
+
+  selectDifficulty(level) {
+    this.selectedLevel = level;
+    for (const btn of this.dom.diffButtons) {
+      btn.classList.toggle('active', btn.dataset.level === level);
+    }
+  }
+
+  showMenu() {
+    if (this.botTimer) {
+      clearTimeout(this.botTimer);
+      this.botTimer = null;
+    }
+    this.timer.stop();
+    this.engine.reset();
+    this.timer.reset();
+    this.renderer.setInteractive(false);
+    this.dom.overlay.classList.add('hidden');
+    this.dom.menuOverlay.classList.remove('hidden');
+    this.selectDifficulty(this.selectedLevel);
+    this.renderTimers(this.timer.times);
+    this.updateHud();
+    this.renderer.render();
+  }
+
+  startGame(level) {
+    this.level = level;
+    this.dom.menuOverlay.classList.add('hidden');
+    this.newGame();
   }
 
   newGame() {
@@ -98,7 +140,7 @@ class Game {
   botTurn() {
     this.botTimer = null;
     if (this.engine.winner) return;
-    const action = chooseBotMove(this.engine);
+    const action = chooseBotMove(this.engine, this.level);
     this.timer.stop();
 
     if (action && action.type === 'move') {
@@ -198,6 +240,7 @@ class Game {
   updateHud() {
     this.dom.humanWalls.textContent = this.engine.players.human.walls;
     this.dom.botWalls.textContent = this.engine.players.bot.walls;
+    this.dom.botRole.textContent = `Bot · ${this.level[0].toUpperCase()}${this.level.slice(1)}`;
 
     if (this.engine.winner) {
       this.dom.turnIndicator.textContent = 'Game over';
