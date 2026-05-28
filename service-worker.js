@@ -1,7 +1,7 @@
 // Offline-first service worker: precache the app shell, serve cache-first,
 // and fall back to the cached index.html for navigations while offline.
 
-const CACHE = 'wallzy-v2';
+const CACHE = 'wallzy-v3';
 
 const ASSETS = [
   './',
@@ -13,6 +13,9 @@ const ASSETS = [
   './js/bot.js',
   './js/timer.js',
   './js/renderer.js',
+  './js/modes.js',
+  './js/cosmetics.js',
+  './js/profile.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',

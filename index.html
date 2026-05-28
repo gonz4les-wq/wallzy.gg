@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0f1226" />
-    <meta name="description" content="Wallzy — a 9x9 turn-based wall-and-race strategy game vs a bot. Installable, offline-ready PWA." />
+    <meta name="description" content="Wallzy — a turn-based wall-and-race strategy game vs a smart bot. Levels, coins, a shop, cosmetics, and multiple modes. Installable, offline-ready PWA." />
     <title>Wallzy.gg — Wall &amp; Race Strategy</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icons/icon-192.png" />
@@ -54,27 +54,81 @@
       </p>
     </main>
 
-    <div id="menu-overlay" class="overlay">
-      <div class="modal menu">
+    <!-- HOME -->
+    <div id="home-screen" class="overlay">
+      <div class="modal home">
         <h2 class="menu-logo">Wallzy<span>.gg</span></h2>
-        <p class="menu-tagline">Race to the far row, wall off the bot, and beat the clock.</p>
+        <div class="profile-bar">
+          <div class="level-badge"><span class="lvl-label">LVL</span><span id="home-level">1</span></div>
+          <div class="xp-wrap">
+            <div class="xp-track"><div id="home-xp-bar" class="xp-fill"></div></div>
+            <span id="home-xp-text" class="xp-text">0 / 100 XP</span>
+          </div>
+          <div class="coins" id="home-coins">0</div>
+        </div>
+        <p id="home-stats" class="menu-tagline">Wins 0 · Losses 0</p>
+        <div class="modal-actions">
+          <button id="open-play" class="btn primary">Play</button>
+          <button id="open-shop" class="btn ghost">Shop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE SELECT -->
+    <div id="mode-screen" class="overlay hidden">
+      <div class="modal wide">
+        <div class="modal-head">
+          <h2>Choose a mode</h2>
+          <button id="mode-back" class="btn ghost small">Back</button>
+        </div>
+        <div id="mode-list" class="mode-list"></div>
         <div class="menu-label">Bot difficulty</div>
         <div class="difficulty" role="group" aria-label="Bot difficulty">
           <button class="btn toggle diff" data-level="easy">Easy</button>
           <button class="btn toggle diff active" data-level="medium">Medium</button>
           <button class="btn toggle diff" data-level="hard">Hard</button>
+          <button class="btn toggle diff" data-level="expert">Expert</button>
         </div>
-        <button id="start-game" class="btn primary">Start Game</button>
+        <button id="mode-start" class="btn primary">Start Game</button>
       </div>
     </div>
 
+    <!-- SHOP -->
+    <div id="shop-screen" class="overlay hidden">
+      <div class="modal wide">
+        <div class="modal-head">
+          <h2>Shop</h2>
+          <div class="coins" id="shop-coins">0</div>
+          <button id="shop-back" class="btn ghost small">Back</button>
+        </div>
+        <div class="shop-section">
+          <div class="menu-label">Pawn skins</div>
+          <div id="shop-pawn" class="shop-grid"></div>
+        </div>
+        <div class="shop-section">
+          <div class="menu-label">Board themes</div>
+          <div id="shop-board" class="shop-grid"></div>
+        </div>
+        <div class="shop-section">
+          <div class="menu-label">Wall styles</div>
+          <div id="shop-wall" class="shop-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIN -->
     <div id="win-overlay" class="overlay hidden">
       <div class="modal">
         <h2 id="win-title">You Win!</h2>
         <p id="win-message"></p>
+        <div id="win-rewards" class="rewards">
+          <div class="reward"><span class="reward-val" id="reward-xp">+0</span><span class="reward-lbl">XP</span></div>
+          <div class="reward"><span class="reward-val" id="reward-coins">+0</span><span class="reward-lbl">Coins</span></div>
+        </div>
+        <p id="win-levelup" class="levelup hidden">Level up!</p>
         <div class="modal-actions">
           <button id="win-restart" class="btn primary">Play Again</button>
-          <button id="win-menu" class="btn ghost">Main Menu</button>
+          <button id="win-home" class="btn ghost">Home</button>
         </div>
       </div>
     </div>

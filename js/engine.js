@@ -19,14 +19,16 @@ export class GameEngine {
     this.reset();
   }
 
-  reset() {
-    this.size = BOARD_SIZE;
-    // row 0 = top, row 8 = bottom.
+  reset(config = {}) {
+    this.size = config.size || BOARD_SIZE;
+    const walls = config.walls != null ? config.walls : WALLS_PER_PLAYER;
+    const mid = Math.floor(this.size / 2);
+    // row 0 = top, row size-1 = bottom.
     this.players = {
-      human: { row: 8, col: 4, goalRow: 0, walls: WALLS_PER_PLAYER },
-      bot: { row: 0, col: 4, goalRow: 8, walls: WALLS_PER_PLAYER },
+      human: { row: this.size - 1, col: mid, goalRow: 0, walls },
+      bot: { row: 0, col: mid, goalRow: this.size - 1, walls },
     };
-    // Wall "centers" anchored at intersection posts (r, c) for r, c in [0, 7].
+    // Wall "centers" anchored at intersection posts (r, c) for r, c in [0, size-2].
     this.hWalls = new Set(); // horizontal walls block vertical movement
     this.vWalls = new Set(); // vertical walls block horizontal movement
     this.turn = 'human';

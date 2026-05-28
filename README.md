@@ -1,12 +1,14 @@
 # Wallzy.gg
 
-A 9×9 turn-based **wall-and-race strategy game** (a Quoridor-style game with a
-jump rule) you play against a bot. Built as an installable, **offline-ready
-Progressive Web App** in vanilla JavaScript — no build step, no dependencies.
+A turn-based **wall-and-race strategy game** (a Quoridor-style game with a jump
+rule) you play against a search-based bot. Multiple game modes, four difficulty
+tiers, XP/leveling, coins, and a cosmetics shop. Built as an installable,
+**offline-ready Progressive Web App** in vanilla JavaScript — no build step, no
+dependencies.
 
 > Race to the far side of the board before the bot does. Drop two-tile walls to
-> stall it, jump over it when you meet face-to-face, and don't let your 60-second
-> clock hit zero.
+> stall it, jump over it when you meet face-to-face, and don't let your clock
+> hit zero. Win games to earn XP and coins, then spend them in the shop.
 
 ---
 
@@ -28,15 +30,16 @@ highlighted in amber.
 
 ### Walls
 
-- Each player has **10 walls**. Walls are **two tiles long** and block movement.
+- Each player gets a **wall budget** (10 in Classic; varies by mode). Walls are
+  **two tiles long** and block movement.
 - Walls **cannot overlap** or partially overlap, and **cannot cross** another wall.
 - A wall can **never completely block** a player from reaching their goal — every
   placement is validated with breadth-first search before it's allowed.
 
 ### Timer
 
-- Each player has a separate **60-second pool** that **only ticks down during
-  that player's turns**.
+- Each player has a separate time pool (60s in Classic; varies by mode) that
+  **only ticks down during that player's turns**.
 - Run out of time and you lose.
 
 ### Win conditions
@@ -46,19 +49,42 @@ highlighted in amber.
 
 ---
 
+## Game modes
+
+Choose a mode on the **Play** screen:
+
+| Mode | Board | Clock | Walls | Vibe |
+| --- | --- | --- | --- | --- |
+| **Classic** | 9×9 | 60s | 10 | The standard, balanced duel. |
+| **Blitz** | 9×9 | 30s | 6 | Fast and aggressive — half the clock. |
+| **Fortress** | 9×9 | 90s | 16 | Wall-heavy tactics; build mazes. |
+| **Grand** | 11×11 | 90s | 14 | Bigger board, longer strategy. |
+
 ## Difficulty
 
-Pick a bot difficulty on the **home menu** before pressing **Start Game**:
+The bot is an **alpha-beta minimax** that searches pawn moves and walls, pruning
+wall candidates to those that actually block your shortest path. Pick a tier:
 
-- **Easy** — passive: races to its goal, only walls to survive a near-loss, and
-  occasionally plays a sub-optimal move. Good for learning.
-- **Medium** — balanced: races when ahead and places walls to delay you,
-  especially as you approach the top row.
-- **Hard** — aggressive: proactively spends walls whenever they improve its
-  position and defends hard when you get close.
+- **Easy** — depth-1 greedy with frequent random moves; only walls to survive.
+- **Medium** — 2-ply search with a touch of randomness.
+- **Hard** — 3-ply search, no mistakes, purposeful walls.
+- **Expert** — 4-ply search; plans walls several moves ahead.
 
-You can return to the menu any time with the **Menu** button (top-right) or
-**Main Menu** on the win screen.
+It only spends a wall when it still pays off after your best reply (so it no
+longer dumps its whole wall stock), and it never places a wall that traps anyone.
+
+## Progression & shop
+
+- **XP & levels** — every game grants XP (more for a win); fill the bar to level
+  up and earn bonus coins.
+- **Coins** — earned each game (and on level-up). Spend them in the **Shop**.
+- **Cosmetics** — buy and equip **pawn skins**, **board themes**, and **wall
+  styles**. Equipped cosmetics reskin the whole game instantly.
+- Progress is saved to `localStorage`, so it persists across sessions and works
+  fully offline.
+
+You can return to the home screen any time with the **Menu** button (top-right)
+or **Home** on the win screen.
 
 ## Controls
 
@@ -83,10 +109,13 @@ You can return to the menu any time with the **Menu** button (top-right) or
 │   └── styles.css        # Dark theme, responsive board + UI
 ├── js/
 │   ├── engine.js         # Grid, movement, jump logic, wall system + BFS validator, win checks
-│   ├── bot.js            # Bot AI: BFS shortest-path racing + strategic wall placement
+│   ├── bot.js            # Bot AI: alpha-beta minimax with wall-candidate pruning
 │   ├── timer.js          # Per-player countdown pools
-│   ├── renderer.js       # Board rendering, highlights, wall preview, input
-│   └── main.js           # Turn manager, HUD, win screen, service-worker registration
+│   ├── renderer.js       # Board rendering (any size), highlights, wall preview, input
+│   ├── modes.js          # Game-mode definitions (board size, clock, walls, rewards)
+│   ├── cosmetics.js      # Cosmetic catalog + CSS-variable theming
+│   ├── profile.js        # XP/level math, coins, ownership, localStorage persistence
+│   └── main.js           # Screens, turn manager, shop, HUD, service-worker registration
 └── icons/
     ├── icon-192.png
     ├── icon-512.png
@@ -141,7 +170,7 @@ your browser's **Install app** / **Add to Home Screen** option. After the first
 load the game is fully playable offline.
 
 > **Updating the deployed app:** the service worker precaches the app shell under
-> a versioned cache (`wallzy-v2` in `service-worker.js`). When you ship changes,
+> a versioned cache (`wallzy-v3` in `service-worker.js`). When you ship changes,
 > bump that version string so clients fetch the new files.
 
 ---
@@ -152,8 +181,14 @@ load the game is fully playable offline.
 - **Wall geometry** is anchored at intersection posts `(r, c)` for `r, c ∈ [0, 7]`;
   overlap, crossing, and collinear conflicts are rejected, and a BFS confirms both
   players still have a path before any wall is committed.
-- **Bot AI** computes BFS shortest paths for both players each turn: it races when
-  it's level or ahead, and otherwise searches all legal walls for the one that
-  delays you most without hurting its own route (and never one that traps anyone).
-  Three difficulty profiles tune how eagerly it spends walls and whether it ever
-  plays a sub-optimal move.
+- **Bot AI** is an iterative-deepening **alpha-beta minimax** under a per-turn
+  time budget. The evaluation is the BFS shortest-path difference between the two
+  players (plus a small wall-economy term). Wall candidates are pruned to the
+  walls that block an edge of the opponent's current shortest path, which keeps
+  the branching factor manageable and the bot's walls purposeful. Difficulty maps
+  to search depth, randomness, and wall-candidate breadth.
+- **Board size is parameterized**, so the engine, renderer, and AI all work for
+  9×9 and 11×11 alike.
+- **Progression** (XP, coins, owned/equipped cosmetics) is persisted to
+  `localStorage`; cosmetics are applied by writing CSS custom properties on
+  `:root`, so a theme swap restyles the whole UI with no re-render.

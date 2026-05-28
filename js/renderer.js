@@ -1,5 +1,6 @@
-// UI layer: builds the 9x9 board, renders pawns/walls, highlights valid moves
+// UI layer: builds the N×N board, renders pawns/walls, highlights valid moves
 // (including jumps), previews wall placement, and routes input to callbacks.
+// Rebuilds for the current board size when a new game starts.
 
 export class Renderer {
   constructor(boardEl, { onMove, onPlaceWall }) {
@@ -12,15 +13,16 @@ export class Renderer {
     this.mode = 'move'; // 'move' | 'wall'
     this.orientation = 'h'; // 'h' | 'v'
 
+    this.n = 9;
     this.cell = 0;
     this.gap = 0;
-    this.validMoves = new Map(); // "r,c" -> { jump }
+    this.validMoves = new Map();
     this.previewSlot = null;
 
     this.cells = [];
     this.pawns = {};
 
-    this.build();
+    this.buildBoard();
     this.attachInput();
     window.addEventListener('resize', () => {
       this.layout();
@@ -32,19 +34,21 @@ export class Renderer {
     this.engine = engine;
   }
 
-  build() {
+  buildBoard() {
+    this.n = this.engine ? this.engine.size : 9;
+    const n = this.n;
     this.board.innerHTML = '';
     this.cells = [];
 
-    for (let r = 0; r < 9; r++) {
+    for (let r = 0; r < n; r++) {
       const row = [];
-      for (let c = 0; c < 9; c++) {
+      for (let c = 0; c < n; c++) {
         const el = document.createElement('div');
         el.className = 'cell';
         el.dataset.r = r;
         el.dataset.c = c;
         if (r === 0) el.classList.add('goal-human');
-        if (r === 8) el.classList.add('goal-bot');
+        if (r === n - 1) el.classList.add('goal-bot');
         this.board.appendChild(el);
         row.push(el);
       }
@@ -61,7 +65,7 @@ export class Renderer {
 
     this.pawns.bot = document.createElement('div');
     this.pawns.bot.className = 'pawn bot';
-    this.pawns.bot.textContent = 'B';
+    this.pawns.bot.textContent = 'Bot';
     this.board.appendChild(this.pawns.bot);
 
     this.pawns.human = document.createElement('div');
@@ -73,13 +77,14 @@ export class Renderer {
   }
 
   layout() {
+    const n = this.n;
     const size = this.board.clientWidth || 480;
-    this.gap = Math.max(6, Math.round(size / 55));
-    this.cell = (size - 8 * this.gap) / 9;
+    this.gap = Math.max(5, Math.round(size / (n * 7)));
+    this.cell = (size - (n - 1) * this.gap) / n;
     const step = this.cell + this.gap;
 
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 9; c++) {
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
         const el = this.cells[r][c];
         el.style.width = `${this.cell}px`;
         el.style.height = `${this.cell}px`;
@@ -87,11 +92,11 @@ export class Renderer {
         el.style.top = `${r * step}px`;
       }
     }
+    const inset = Math.round(this.cell * 0.12);
     for (const p of Object.values(this.pawns)) {
-      const inset = Math.round(this.cell * 0.12);
       p.style.width = `${this.cell - inset * 2}px`;
       p.style.height = `${this.cell - inset * 2}px`;
-      p.style.fontSize = `${Math.max(10, Math.round(this.cell * 0.28))}px`;
+      p.style.fontSize = `${Math.max(9, Math.round(this.cell * 0.26))}px`;
     }
   }
 
@@ -99,23 +104,12 @@ export class Renderer {
     return this.cell + this.gap;
   }
 
-  // Pixel geometry of a wall anchored at post (r, c).
   wallRect(orientation, r, c) {
     const step = this.step();
     if (orientation === 'h') {
-      return {
-        left: c * step,
-        top: r * step + this.cell,
-        width: 2 * this.cell + this.gap,
-        height: this.gap,
-      };
+      return { left: c * step, top: r * step + this.cell, width: 2 * this.cell + this.gap, height: this.gap };
     }
-    return {
-      left: c * step + this.cell,
-      top: r * step,
-      width: this.gap,
-      height: 2 * this.cell + this.gap,
-    };
+    return { left: c * step + this.cell, top: r * step, width: this.gap, height: 2 * this.cell + this.gap };
   }
 
   setMode(mode) {
@@ -138,8 +132,8 @@ export class Renderer {
   render() {
     if (!this.engine) return;
     const s = this.engine.getState();
-
     const inset = Math.round(this.cell * 0.12);
+
     this.placePawn(this.pawns.human, s.players.human, inset);
     this.placePawn(this.pawns.bot, s.players.bot, inset);
     this.pawns.human.classList.toggle('active', s.turn === 'human' && !s.winner);
@@ -175,8 +169,8 @@ export class Renderer {
 
   renderHighlights(s) {
     this.validMoves.clear();
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 9; c++) {
+    for (let r = 0; r < this.n; r++) {
+      for (let c = 0; c < this.n; c++) {
         this.cells[r][c].classList.remove('valid', 'jump');
       }
     }
@@ -192,15 +186,12 @@ export class Renderer {
     }
   }
 
-  // Nearest wall post (r, c) to a board-local point.
   slotAt(localX, localY) {
     const step = this.step();
+    const max = this.n - 2;
     const r = Math.round((localY - this.cell - this.gap / 2) / step);
     const c = Math.round((localX - this.cell - this.gap / 2) / step);
-    return {
-      r: Math.max(0, Math.min(7, r)),
-      c: Math.max(0, Math.min(7, c)),
-    };
+    return { r: Math.max(0, Math.min(max, r)), c: Math.max(0, Math.min(max, c)) };
   }
 
   localPoint(evt) {
@@ -215,9 +206,7 @@ export class Renderer {
     }
     const { x, y } = this.localPoint(evt);
     const { r, c } = this.slotAt(x, y);
-    const valid =
-      this.engine.players.human.walls > 0 &&
-      this.engine.canPlaceWall(this.orientation, r, c);
+    const valid = this.engine.players.human.walls > 0 && this.engine.canPlaceWall(this.orientation, r, c);
 
     this.previewSlot = { r, c, valid };
     const rect = this.wallRect(this.orientation, r, c);
@@ -246,13 +235,9 @@ export class Renderer {
         return;
       }
 
-      // Wall mode: place at the slot under the pointer.
       const { x, y } = this.localPoint(evt);
       const { r, c } = this.slotAt(x, y);
-      if (
-        this.engine.players.human.walls > 0 &&
-        this.engine.canPlaceWall(this.orientation, r, c)
-      ) {
+      if (this.engine.players.human.walls > 0 && this.engine.canPlaceWall(this.orientation, r, c)) {
         this.onPlaceWall(this.orientation, r, c);
       }
     });
