@@ -9,13 +9,29 @@ import { GameEngine } from './engine.js';
 export const DIFFICULTY_ORDER = ['easy', 'medium', 'hard', 'expert'];
 
 const LEVELS = {
-  easy: { maxDepth: 1, blunder: 0.35, maxWalls: 6, timeMs: 60 },
-  medium: { maxDepth: 2, blunder: 0.06, maxWalls: 10, timeMs: 150 },
+  easy: { maxDepth: 1, blunder: 0.3, maxWalls: 6, timeMs: 60 },
+  medium: { maxDepth: 2, blunder: 0, maxWalls: 10, timeMs: 150 },
   hard: { maxDepth: 3, blunder: 0, maxWalls: 12, timeMs: 320 },
   expert: { maxDepth: 4, blunder: 0, maxWalls: 14, timeMs: 600 },
 };
 
 const WIN = 1e6;
+
+// Trail of the bot's recent cells ("row,col"), newest last. Used to break
+// evaluation ties away from cells it just left, so it never paces back and
+// forth when several moves look equal. Cleared at the start of a new game.
+const recentBotCells = [];
+const TRAIL_LEN = 6;
+
+export function resetBotMemory() {
+  recentBotCells.length = 0;
+}
+
+function noteBotPosition(engine) {
+  const b = engine.players.bot;
+  recentBotCells.push(`${b.row},${b.col}`);
+  if (recentBotCells.length > TRAIL_LEN) recentBotCells.shift();
+}
 
 // ---- search state (a lightweight clone of the live engine) ----
 
@@ -70,7 +86,15 @@ function evaluate(s) {
   const humanDist = s.shortestPathLength('human');
   // Mild preference to keep walls in reserve so ties favor advancing.
   const wallEconomy = 0.05 * (s.players.bot.walls - s.players.human.walls);
-  return humanDist - botDist + wallEconomy;
+  // Small penalty for landing on a cell the bot recently occupied. Tiny enough
+  // that it never overrides a real gain (a full step changes distance by 1),
+  // but enough to break ties so the bot stops oscillating in dead positions.
+  let repeat = 0;
+  const botKey = `${s.players.bot.row},${s.players.bot.col}`;
+  for (let i = 0; i < recentBotCells.length; i++) {
+    if (recentBotCells[i] === botKey) repeat += 0.12;
+  }
+  return humanDist - botDist + wallEconomy - repeat;
 }
 
 // One shortest path (list of cells) for a player, using BFS with parents.
@@ -273,6 +297,7 @@ function fallbackWall(engine) {
 // { type:'wall', orientation, r, c }.
 export function chooseBotMove(engine, level = 'medium') {
   const cfg = LEVELS[level] || LEVELS.medium;
+  noteBotPosition(engine);
   if (cfg.maxDepth <= 1) return easyMove(engine, cfg);
 
   // A touch of randomness keeps medium from feeling robotic.

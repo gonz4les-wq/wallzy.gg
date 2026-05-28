@@ -4,7 +4,7 @@
 import { GameEngine } from './engine.js';
 import { Timer } from './timer.js';
 import { Renderer } from './renderer.js';
-import { chooseBotMove } from './bot.js';
+import { chooseBotMove, resetBotMemory } from './bot.js';
 import { MODES, MODE_ORDER, getMode } from './modes.js';
 import { itemsByType, getItem, applyEquipped, applyPreview } from './cosmetics.js';
 import { loadProfile, saveProfile, levelInfo, applyResult, buyItem, equipItem } from './profile.js';
@@ -144,7 +144,7 @@ class Game {
     this.dom.homeLevel.textContent = info.level;
     this.dom.homeXpBar.style.width = `${info.pct}%`;
     this.dom.homeXpText.textContent = `${info.intoLevel} / ${info.need} XP`;
-    this.dom.homeCoins.textContent = `${this.profile.coins} ⛁`;
+    this.dom.homeCoins.textContent = this.profile.coins;
     const s = this.profile.stats;
     this.dom.homeStats.textContent = `Wins ${s.wins} · Losses ${s.losses}`;
   }
@@ -250,6 +250,7 @@ class Game {
       this.botTimer = null;
     }
     this.engine.reset({ size: this.mode.size, walls: this.mode.walls });
+    resetBotMemory();
     this.timer.startMs = this.mode.timeMs;
     this.timer.reset();
 

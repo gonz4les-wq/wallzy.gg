@@ -55,21 +55,34 @@
     </main>
 
     <!-- HOME -->
-    <div id="home-screen" class="overlay">
-      <div class="modal home">
-        <h2 class="menu-logo">Wallzy<span>.gg</span></h2>
-        <div class="profile-bar">
-          <div class="level-badge"><span class="lvl-label">LVL</span><span id="home-level">1</span></div>
-          <div class="xp-wrap">
-            <div class="xp-track"><div id="home-xp-bar" class="xp-fill"></div></div>
-            <span id="home-xp-text" class="xp-text">0 / 100 XP</span>
+    <div id="home-screen" class="overlay home-screen">
+      <div class="home-layout">
+        <div class="home-top">
+          <div class="profile-bar">
+            <div class="level-badge"><span class="lvl-label">LVL</span><span id="home-level">1</span></div>
+            <div class="xp-wrap">
+              <div class="xp-track"><div id="home-xp-bar" class="xp-fill"></div></div>
+              <span id="home-xp-text" class="xp-text">0 / 100 XP</span>
+            </div>
           </div>
-          <div class="coins" id="home-coins">0</div>
+          <div class="coin-chip"><span class="coin-icon">⛁</span><span id="home-coins">0</span></div>
         </div>
-        <p id="home-stats" class="menu-tagline">Wins 0 · Losses 0</p>
-        <div class="modal-actions">
-          <button id="open-play" class="btn primary">Play</button>
-          <button id="open-shop" class="btn ghost">Shop</button>
+
+        <div class="home-hero">
+          <div class="home-emblem" aria-hidden="true">
+            <span class="emblem-wall"></span>
+            <span class="emblem-wall"></span>
+            <span class="emblem-pawn human"></span>
+            <span class="emblem-pawn bot"></span>
+          </div>
+          <h2 class="home-logo">Wallzy<span>.gg</span></h2>
+          <p class="home-sub">Wall &amp; Race Strategy</p>
+          <p id="home-stats" class="home-stats">Wins 0 · Losses 0</p>
+        </div>
+
+        <div class="home-actions">
+          <button id="open-play" class="btn play-btn">Play</button>
+          <button id="open-shop" class="btn shop-btn"><span class="shop-icon">🛒</span> Shop</button>
         </div>
       </div>
     </div>
