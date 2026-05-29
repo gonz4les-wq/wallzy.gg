@@ -1,14 +1,14 @@
 {
-  "name": "Wallzy.gg — Wall & Race Strategy",
-  "short_name": "Wallzy",
-  "description": "A 9x9 turn-based wall-and-race strategy game against a bot. Block, jump, and race to the far row before time runs out.",
+  "name": "Daily — Todo, Calendar & Shopping",
+  "short_name": "Daily",
+  "description": "A clean, offline-ready todo list, day-journal calendar, and shopping list. Three simple tabs.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f1226",
-  "theme_color": "#0f1226",
-  "categories": ["games", "strategy"],
+  "background_color": "#f4f5fb",
+  "theme_color": "#4f46e5",
+  "categories": ["productivity", "lifestyle", "utilities"],
   "icons": [
     {
       "src": "./icons/icon-192.png",
